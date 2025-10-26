@@ -1,0 +1,186 @@
+{
+  "name": "ai-translate-wiki",
+  "displayName": "AI Translate Wiki",
+  "description": "AI翻译插件，支持将中文Markdown文档翻译成多种语言",
+  "version": "1.0.0",
+  "publisher": "your-publisher",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other",
+    "Machine Learning"
+  ],
+  "keywords": [
+    "translate",
+    "ai",
+    "markdown",
+    "wiki",
+    "chinese",
+    "multilingual"
+  ],
+  "activationEvents": [
+    "onCommand:ai-translate-wiki.translateFile",
+    "onCommand:ai-translate-wiki.translateSelection",
+    "onCommand:ai-translate-wiki.openSettings"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "ai-translate-wiki.translateFile",
+        "title": "翻译整个文件",
+        "category": "AI Translate"
+      },
+      {
+        "command": "ai-translate-wiki.translateSelection",
+        "title": "翻译选中内容",
+        "category": "AI Translate"
+      },
+      {
+        "command": "ai-translate-wiki.openSettings",
+        "title": "打开设置",
+        "category": "AI Translate"
+      },
+      {
+        "command": "ai-translate-wiki.translateDirectory",
+        "title": "批量翻译目录",
+        "category": "AI Translate"
+      },
+      {
+        "command": "ai-translate-wiki.testTranslation",
+        "title": "测试翻译功能",
+        "category": "AI Translate"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "editorHasSelection",
+          "command": "ai-translate-wiki.translateSelection",
+          "group": "ai-translate"
+        }
+      ],
+      "explorer/context": [
+        {
+          "when": "resourceExtname == '.md'",
+          "command": "ai-translate-wiki.translateFile",
+          "group": "ai-translate"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "ai-translate-wiki.translateFile"
+        },
+        {
+          "command": "ai-translate-wiki.translateSelection"
+        },
+        {
+          "command": "ai-translate-wiki.openSettings"
+        },
+        {
+          "command": "ai-translate-wiki.translateDirectory"
+        },
+        {
+          "command": "ai-translate-wiki.testTranslation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "AI Translate Wiki",
+      "properties": {
+        "ai-translate-wiki.apiProvider": {
+          "type": "string",
+          "default": "openai",
+          "enum": [
+            "openai",
+            "azure",
+            "google",
+            "claude",
+            "deepseek"
+          ],
+          "enumDescriptions": [
+            "OpenAI GPT",
+            "Azure OpenAI",
+            "Google Translate",
+            "Anthropic Claude",
+            "DeepSeek"
+          ],
+          "description": "选择AI翻译服务提供商"
+        },
+        "ai-translate-wiki.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API密钥"
+        },
+        "ai-translate-wiki.apiEndpoint": {
+          "type": "string",
+          "default": "",
+          "description": "API端点URL（如果使用自定义端点）"
+        },
+        "ai-translate-wiki.targetLanguage": {
+          "type": "string",
+          "default": "en",
+          "description": "目标翻译语言代码（如：en, ja, ko, fr, de等）"
+        },
+        "ai-translate-wiki.outputDirectory": {
+          "type": "string",
+          "default": "./translated",
+          "description": "翻译文件输出目录"
+        },
+        "ai-translate-wiki.preserveFormatting": {
+          "type": "boolean",
+          "default": true,
+          "description": "保持Markdown格式"
+        },
+        "ai-translate-wiki.translateCodeBlocks": {
+          "type": "boolean",
+          "default": false,
+          "description": "翻译代码块中的注释"
+        },
+        "ai-translate-wiki.batchSize": {
+          "type": "number",
+          "default": 5,
+          "minimum": 1,
+          "maximum": 20,
+          "description": "批量翻译的段落数量"
+        },
+        "ai-translate-wiki.inputDirectory": {
+          "type": "string",
+          "default": "./",
+          "description": "输入文件目录（用于批量翻译）"
+        },
+        "ai-translate-wiki.filePattern": {
+          "type": "string",
+          "default": "**/*.md",
+          "description": "文件匹配模式（支持glob语法）"
+        },
+        "ai-translate-wiki.recursiveSearch": {
+          "type": "boolean",
+          "default": true,
+          "description": "是否递归搜索子目录"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.74.0",
+    "@types/node": "16.x",
+    "@typescript-eslint/eslint-plugin": "^5.45.0",
+    "@typescript-eslint/parser": "^5.45.0",
+    "eslint": "^8.28.0",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "marked": "^9.1.6"
+  }
+}
