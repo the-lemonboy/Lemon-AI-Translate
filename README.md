@@ -149,3 +149,4 @@ A: 可以尝试调整"批量翻译大小"设置，或选择更快的 API 服务
 
 MIT License
 # Lemon-AI-Translate
+# Lemon-AI-Translate
