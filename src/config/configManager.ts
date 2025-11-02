@@ -47,6 +47,10 @@ export class ConfigManager {
         return vscode.workspace.getConfiguration(ConfigManager.CONFIG_SECTION).get('recursiveSearch', true);
     }
 
+    getCustomPrompt(): string {
+        return vscode.workspace.getConfiguration(ConfigManager.CONFIG_SECTION).get('customPrompt', '');
+    }
+
     async updateApiProvider(provider: string): Promise<void> {
         await vscode.workspace.getConfiguration(ConfigManager.CONFIG_SECTION).update('apiProvider', provider, vscode.ConfigurationTarget.Global);
     }
@@ -89,6 +93,10 @@ export class ConfigManager {
 
     async updateRecursiveSearch(recursive: boolean): Promise<void> {
         await vscode.workspace.getConfiguration(ConfigManager.CONFIG_SECTION).update('recursiveSearch', recursive, vscode.ConfigurationTarget.Global);
+    }
+
+    async updateCustomPrompt(prompt: string): Promise<void> {
+        await vscode.workspace.getConfiguration(ConfigManager.CONFIG_SECTION).update('customPrompt', prompt, vscode.ConfigurationTarget.Global);
     }
 
     // 获取支持的语言列表

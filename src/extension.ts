@@ -3,6 +3,7 @@ import { TranslationService } from './services/translationService';
 import { MarkdownProcessor } from './processors/markdownProcessor';
 import { ConfigManager } from './config/configManager';
 import { SettingsPanel } from './webview/settingsPanel';
+import { TranslateWebviewViewProvider } from './webview/translateWebviewView';
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('AI Translate Wiki插件已激活');
@@ -175,6 +176,20 @@ export function activate(context: vscode.ExtensionContext) {
             vscode.window.showErrorMessage(`翻译测试失败: ${error}`);
         }
     });
+
+    // 注册WebviewView Provider
+    const webviewViewProvider = new TranslateWebviewViewProvider(
+        context.extensionUri,
+        configManager,
+        translationService,
+        markdownProcessor
+    );
+    context.subscriptions.push(
+        vscode.window.registerWebviewViewProvider(
+            TranslateWebviewViewProvider.viewType,
+            webviewViewProvider
+        )
+    );
 
     // 注册状态栏项
     const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);

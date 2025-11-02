@@ -22,7 +22,9 @@
   "activationEvents": [
     "onCommand:ai-translate-wiki.translateFile",
     "onCommand:ai-translate-wiki.translateSelection",
-    "onCommand:ai-translate-wiki.openSettings"
+    "onCommand:ai-translate-wiki.openSettings",
+    "onView:ai-translate-wiki.translateView",
+    "onViewContainer:ai-translate-wiki"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -53,6 +55,24 @@
         "category": "AI Translate"
       }
     ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ai-translate-wiki",
+          "title": "AI翻译",
+          "icon": "$(globe)"
+        }
+      ]
+    },
+    "views": {
+      "ai-translate-wiki": [
+        {
+          "id": "ai-translate-wiki.translateView",
+          "name": "翻译控制台",
+          "type": "webview"
+        }
+      ]
+    },
     "menus": {
       "editor/context": [
         {
@@ -83,6 +103,9 @@
         },
         {
           "command": "ai-translate-wiki.testTranslation"
+        },
+        {
+          "command": "ai-translate-wiki.openTranslatePanel"
         }
       ]
     },
@@ -159,6 +182,11 @@
           "type": "boolean",
           "default": true,
           "description": "是否递归搜索子目录"
+        },
+        "ai-translate-wiki.customPrompt": {
+          "type": "string",
+          "default": "",
+          "description": "自定义翻译Prompt，留空则使用默认prompt。可使用 {targetLanguage} 作为占位符"
         }
       }
     }
