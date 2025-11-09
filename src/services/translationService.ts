@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { ConfigManager } from '../config/configManager';
+import { I18n } from '../utils/i18n';
 
 export interface TranslationResult {
     text: string;
@@ -23,8 +24,8 @@ export class TranslationService {
         const apiProvider = this.configManager.getApiProvider();
         const targetLanguage = this.configManager.getTargetLanguage();
 
-        console.log(`开始翻译，API提供商: ${apiProvider}, 目标语言: ${targetLanguage}`);
-        console.log(`原文长度: ${text.length} 字符`);
+        console.log(I18n.t('log.translationStarted', apiProvider, targetLanguage));
+        console.log(I18n.t('log.textLength', text.length.toString()));
 
         let result: string;
         switch (apiProvider) {
@@ -60,8 +61,8 @@ export class TranslationService {
         // 替换占位符
         const prompt = customPrompt.replace(/{targetLanguage}/g, this._getLanguageName(targetLanguage));
 
-        console.log(`开始翻译（使用自定义prompt），API提供商: ${apiProvider}, 目标语言: ${targetLanguage}`);
-        console.log(`原文长度: ${text.length} 字符`);
+        console.log(I18n.t('log.translationWithCustomPrompt', apiProvider, targetLanguage));
+        console.log(I18n.t('log.textLength', text.length.toString()));
 
         let result: string;
         switch (apiProvider) {
@@ -122,7 +123,7 @@ export class TranslationService {
         const apiEndpoint = this.configManager.getApiEndpoint() || 'https://api.openai.com/v1/chat/completions';
 
         if (!apiKey) {
-            throw new Error('请先配置OpenAI API密钥');
+            throw new Error(I18n.t('error.apiKeyNotConfigured', 'OpenAI'));
         }
 
         const languageNames: { [key: string]: string } = {
@@ -169,7 +170,7 @@ export class TranslationService {
         const apiEndpoint = this.configManager.getApiEndpoint();
 
         if (!apiKey || !apiEndpoint) {
-            throw new Error('请先配置Azure OpenAI API密钥和端点');
+            throw new Error(I18n.t('error.azureEndpointRequired'));
         }
 
         const languageNames: { [key: string]: string } = {
@@ -214,7 +215,7 @@ export class TranslationService {
         const apiKey = this.configManager.getApiKey();
 
         if (!apiKey) {
-            throw new Error('请先配置Google Translate API密钥');
+            throw new Error(I18n.t('error.googleApiKeyRequired'));
         }
 
         const response = await axios.post(`https://translation.googleapis.com/language/translate/v2?key=${apiKey}`, {
@@ -232,7 +233,7 @@ export class TranslationService {
         const apiEndpoint = this.configManager.getApiEndpoint() || 'https://api.anthropic.com/v1/messages';
 
         if (!apiKey) {
-            throw new Error('请先配置Claude API密钥');
+            throw new Error(I18n.t('error.claudeApiKeyRequired'));
         }
 
         const languageNames: { [key: string]: string } = {
@@ -275,7 +276,7 @@ export class TranslationService {
         const apiEndpoint = this.configManager.getApiEndpoint() || 'https://api.deepseek.com/v1/chat/completions';
 
         if (!apiKey) {
-            throw new Error('请先配置DeepSeek API密钥');
+            throw new Error(I18n.t('error.deepseekApiKeyRequired'));
         }
 
         const languageNames: { [key: string]: string } = {
@@ -332,7 +333,7 @@ export class TranslationService {
         const apiEndpoint = this.configManager.getApiEndpoint() || 'https://api.openai.com/v1/chat/completions';
 
         if (!apiKey) {
-            throw new Error('请先配置OpenAI API密钥');
+            throw new Error(I18n.t('error.apiKeyNotConfigured', 'OpenAI'));
         }
 
         const response = await axios.post(apiEndpoint, {
@@ -364,7 +365,7 @@ export class TranslationService {
         const apiEndpoint = this.configManager.getApiEndpoint();
 
         if (!apiKey || !apiEndpoint) {
-            throw new Error('请先配置Azure OpenAI API密钥和端点');
+            throw new Error(I18n.t('error.azureEndpointRequired'));
         }
 
         const response = await axios.post(apiEndpoint, {
@@ -395,7 +396,7 @@ export class TranslationService {
         const apiEndpoint = this.configManager.getApiEndpoint() || 'https://api.anthropic.com/v1/messages';
 
         if (!apiKey) {
-            throw new Error('请先配置Claude API密钥');
+            throw new Error(I18n.t('error.claudeApiKeyRequired'));
         }
 
         const response = await axios.post(apiEndpoint, {
@@ -423,7 +424,7 @@ export class TranslationService {
         const apiEndpoint = this.configManager.getApiEndpoint() || 'https://api.deepseek.com/v1/chat/completions';
 
         if (!apiKey) {
-            throw new Error('请先配置DeepSeek API密钥');
+            throw new Error(I18n.t('error.deepseekApiKeyRequired'));
         }
 
         const response = await axios.post(apiEndpoint, {

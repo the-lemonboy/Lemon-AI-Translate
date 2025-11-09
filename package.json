@@ -1,7 +1,7 @@
 {
   "name": "ai-translate-wiki",
-  "displayName": "AI Translate Wiki",
-  "description": "AI翻译插件，支持将中文Markdown文档翻译成多种语言",
+  "displayName": "%extension.displayName%",
+  "description": "%extension.description%",
   "version": "1.0.0",
   "publisher": "your-publisher",
   "engines": {
@@ -31,27 +31,27 @@
     "commands": [
       {
         "command": "ai-translate-wiki.translateFile",
-        "title": "翻译整个文件",
+        "title": "%command.translateFile.title%",
         "category": "AI Translate"
       },
       {
         "command": "ai-translate-wiki.translateSelection",
-        "title": "翻译选中内容",
+        "title": "%command.translateSelection.title%",
         "category": "AI Translate"
       },
       {
         "command": "ai-translate-wiki.openSettings",
-        "title": "打开设置",
+        "title": "%command.openSettings.title%",
         "category": "AI Translate"
       },
       {
         "command": "ai-translate-wiki.translateDirectory",
-        "title": "批量翻译目录",
+        "title": "%command.translateDirectory.title%",
         "category": "AI Translate"
       },
       {
         "command": "ai-translate-wiki.testTranslation",
-        "title": "测试翻译功能",
+        "title": "%command.testTranslation.title%",
         "category": "AI Translate"
       }
     ],
@@ -59,7 +59,7 @@
       "activitybar": [
         {
           "id": "ai-translate-wiki",
-          "title": "AI翻译",
+          "title": "%viewContainer.title%",
           "icon": "$(globe)"
         }
       ]
@@ -68,7 +68,7 @@
       "ai-translate-wiki": [
         {
           "id": "ai-translate-wiki.translateView",
-          "name": "翻译控制台",
+          "name": "%view.translateView.name%",
           "type": "webview"
         }
       ]
@@ -129,64 +129,57 @@
             "Anthropic Claude",
             "DeepSeek"
           ],
-          "description": "选择AI翻译服务提供商"
+          "description": "%config.apiProvider.description%"
         },
         "ai-translate-wiki.apiKey": {
           "type": "string",
           "default": "",
-          "description": "API密钥"
+          "description": "%config.apiKey.description%"
         },
         "ai-translate-wiki.apiEndpoint": {
           "type": "string",
           "default": "",
-          "description": "API端点URL（如果使用自定义端点）"
+          "description": "%config.apiEndpoint.description%"
         },
         "ai-translate-wiki.targetLanguage": {
           "type": "string",
           "default": "en",
-          "description": "目标翻译语言代码（如：en, ja, ko, fr, de等）"
+          "description": "%config.targetLanguage.description%"
         },
         "ai-translate-wiki.outputDirectory": {
           "type": "string",
           "default": "./translated",
-          "description": "翻译文件输出目录"
+          "description": "%config.outputDirectory.description%"
         },
         "ai-translate-wiki.preserveFormatting": {
           "type": "boolean",
           "default": true,
-          "description": "保持Markdown格式"
+          "description": "%config.preserveFormatting.description%"
         },
         "ai-translate-wiki.translateCodeBlocks": {
           "type": "boolean",
           "default": false,
-          "description": "翻译代码块中的注释"
-        },
-        "ai-translate-wiki.batchSize": {
-          "type": "number",
-          "default": 5,
-          "minimum": 1,
-          "maximum": 20,
-          "description": "批量翻译的段落数量"
+          "description": "%config.translateCodeBlocks.description%"
         },
         "ai-translate-wiki.inputDirectory": {
           "type": "string",
           "default": "./",
-          "description": "输入文件目录（用于批量翻译）"
+          "description": "%config.inputDirectory.description%"
         },
         "ai-translate-wiki.filePattern": {
           "type": "string",
           "default": "**/*.md",
-          "description": "文件匹配模式（支持glob语法）"
+          "description": "%config.filePattern.description%"
         },
         "ai-translate-wiki.recursiveSearch": {
           "type": "boolean",
           "default": true,
-          "description": "是否递归搜索子目录"
+          "description": "%config.recursiveSearch.description%"
         },
         "ai-translate-wiki.customPrompt": {
           "type": "string",
           "default": "",
-          "description": "自定义翻译Prompt，留空则使用默认prompt。可使用 {targetLanguage} 作为占位符"
+          "description": "%config.customPrompt.description%"
         }
       }
     }

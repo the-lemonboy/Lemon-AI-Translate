@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import { ConfigManager } from '../config/configManager';
 import { TranslationService } from '../services/translationService';
 import { MarkdownProcessor } from '../processors/markdownProcessor';
+import { I18n } from '../utils/i18n';
 
 export class TranslatePanel {
     private static readonly viewType = 'ai-translate-wiki.translate';
@@ -99,7 +100,7 @@ export class TranslatePanel {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>批量翻译控制台</title>
+    <title> ${I18n.t('message.batchTranslationConsole')} </title>
     <style>
         body {
             font-family: var(--vscode-font-family);

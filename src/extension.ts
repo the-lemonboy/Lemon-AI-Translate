@@ -1,15 +1,17 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { TranslationService } from './services/translationService';
 import { MarkdownProcessor } from './processors/markdownProcessor';
 import { ConfigManager } from './config/configManager';
 import { SettingsPanel } from './webview/settingsPanel';
 import { TranslateWebviewViewProvider } from './webview/translateWebviewView';
+import { I18n } from './utils/i18n';
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('AI Translate Wiki插件已激活');
 
     // 显示激活消息
-    vscode.window.showInformationMessage('AI翻译插件已激活！');
+    vscode.window.showInformationMessage(I18n.t('message.extensionActivated'));
 
     const configManager = new ConfigManager();
     const translationService = new TranslationService(configManager);
@@ -22,28 +24,28 @@ export function activate(context: vscode.ExtensionContext) {
         console.log('翻译文件命令被调用');
         const activeEditor = vscode.window.activeTextEditor;
         if (!activeEditor) {
-            vscode.window.showWarningMessage('请先打开一个Markdown文件');
+            vscode.window.showWarningMessage(I18n.t('message.openMarkdownFile'));
             return;
         }
 
         const document = activeEditor.document;
         if (document.languageId !== 'markdown') {
-            vscode.window.showWarningMessage('请选择一个Markdown文件');
+            vscode.window.showWarningMessage(I18n.t('message.selectMarkdownFile'));
             return;
         }
 
         try {
             await vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
-                title: "正在翻译文件...",
+                title: I18n.t('message.translatingFile'),
                 cancellable: true
             }, async (progress, token) => {
                 await markdownProcessor.translateFile(document, progress, token);
             });
 
-            vscode.window.showInformationMessage('文件翻译完成！');
+            vscode.window.showInformationMessage(I18n.t('message.fileTranslated'));
         } catch (error) {
-            vscode.window.showErrorMessage(`翻译失败: ${error}`);
+            vscode.window.showErrorMessage(I18n.t('message.translationFailed', String(error)));
         }
     });
 
@@ -51,13 +53,13 @@ export function activate(context: vscode.ExtensionContext) {
         console.log('翻译选中内容命令被调用');
         const activeEditor = vscode.window.activeTextEditor;
         if (!activeEditor) {
-            vscode.window.showWarningMessage('请先打开一个文件');
+            vscode.window.showWarningMessage(I18n.t('message.openFile'));
             return;
         }
 
         const selection = activeEditor.selection;
         if (selection.isEmpty) {
-            vscode.window.showWarningMessage('请先选择要翻译的内容');
+            vscode.window.showWarningMessage(I18n.t('message.selectContent'));
             return;
         }
 
@@ -67,7 +69,7 @@ export function activate(context: vscode.ExtensionContext) {
             // 显示翻译进度
             await vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
-                title: "正在翻译选中内容...",
+                title: I18n.t('message.translatingFile'),
                 cancellable: false
             }, async () => {
                 const translatedText = await translationService.translateText(selectedText);
@@ -78,10 +80,10 @@ export function activate(context: vscode.ExtensionContext) {
                 });
             });
 
-            vscode.window.showInformationMessage('选中内容翻译完成！');
+            vscode.window.showInformationMessage(I18n.t('message.selectionTranslated'));
         } catch (error) {
             console.error('翻译错误:', error);
-            vscode.window.showErrorMessage(`翻译失败: ${error}`);
+            vscode.window.showErrorMessage(I18n.t('message.translationFailed', String(error)));
         }
     });
 
@@ -103,23 +105,23 @@ export function activate(context: vscode.ExtensionContext) {
             const files = await vscode.workspace.findFiles(pattern, null, 100);
 
             if (files.length === 0) {
-                vscode.window.showWarningMessage(`在目录 ${inputDir} 中没有找到匹配 ${filePattern} 的文件`);
+                vscode.window.showWarningMessage(I18n.t('message.noFilesFound', filePattern, inputDir));
                 return;
             }
 
             const result = await vscode.window.showInformationMessage(
-                `找到 ${files.length} 个文件，是否开始批量翻译？`,
-                '开始翻译',
-                '取消'
+                I18n.t('message.filesFound', files.length.toString()),
+                I18n.t('message.startTranslation'),
+                I18n.t('message.cancel')
             );
 
-            if (result !== '开始翻译') {
+            if (result !== I18n.t('message.startTranslation')) {
                 return;
             }
 
             await vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
-                title: "正在批量翻译文件...",
+                title: I18n.t('message.translatingFile'),
                 cancellable: true
             }, async (progress, token) => {
                 for (let i = 0; i < files.length; i++) {
@@ -131,21 +133,21 @@ export function activate(context: vscode.ExtensionContext) {
                     const document = await vscode.workspace.openTextDocument(file);
 
                     progress.report({
-                        message: `正在翻译 ${file.fsPath} (${i + 1}/${files.length})`,
+                        message: I18n.t('webview.progress.translatingFile', path.basename(file.fsPath), (i + 1).toString(), files.length.toString()),
                         increment: (100 / files.length)
                     });
 
                     try {
                         await markdownProcessor.translateFile(document, progress, token);
                     } catch (error) {
-                        console.error(`翻译文件 ${file.fsPath} 失败:`, error);
+                        console.error(I18n.t('webview.progress.error', file.fsPath), error);
                     }
                 }
             });
 
-            vscode.window.showInformationMessage(`批量翻译完成！共处理 ${files.length} 个文件`);
+            vscode.window.showInformationMessage(I18n.t('message.batchTranslationCompleted', files.length.toString()));
         } catch (error) {
-            vscode.window.showErrorMessage(`批量翻译失败: ${error}`);
+            vscode.window.showErrorMessage(I18n.t('message.batchTranslationFailed', String(error)));
         }
     });
 
@@ -153,15 +155,15 @@ export function activate(context: vscode.ExtensionContext) {
         console.log('测试翻译命令被调用');
 
         try {
-            const testText = "这是一个测试文本，用于验证翻译功能是否正常工作。";
+            const testText = I18n.t('message.testText', 'This is a test text to verify that the translation function works correctly.');
             const apiProvider = configManager.getApiProvider();
             const targetLanguage = configManager.getTargetLanguage();
 
-            vscode.window.showInformationMessage(`开始测试翻译功能...\nAPI: ${apiProvider}\n目标语言: ${targetLanguage}\n原文: ${testText}`);
+            vscode.window.showInformationMessage(I18n.t('message.testTranslationStarted', apiProvider, targetLanguage, testText));
 
             const translatedText = await translationService.translateText(testText);
 
-            vscode.window.showInformationMessage(`翻译测试完成！\n原文: ${testText}\n译文: ${translatedText}`);
+            vscode.window.showInformationMessage(I18n.t('message.testTranslationCompleted', testText, translatedText));
 
             // 在调试控制台输出详细信息
             console.log('=== 翻译测试结果 ===');
@@ -173,7 +175,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         } catch (error) {
             console.error('翻译测试失败:', error);
-            vscode.window.showErrorMessage(`翻译测试失败: ${error}`);
+            vscode.window.showErrorMessage(I18n.t('message.testTranslationFailed', String(error)));
         }
     });
 
@@ -193,7 +195,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // 注册状态栏项
     const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-    statusBarItem.text = "$(globe) AI翻译";
+    statusBarItem.text = `$(globe) ${I18n.t('viewContainer.title')}`;
     statusBarItem.command = 'ai-translate-wiki.openSettings';
     statusBarItem.show();
 
@@ -207,9 +209,9 @@ export function activate(context: vscode.ExtensionContext) {
     );
 
     console.log('所有命令注册完成');
-    vscode.window.showInformationMessage('AI翻译插件命令已注册完成！');
+    vscode.window.showInformationMessage(I18n.t('message.commandsRegistered'));
 }
 
 export function deactivate() {
-    console.log('AI Translate Wiki插件已停用');
+    console.log(I18n.t('message.extensionDeactivated'));
 }

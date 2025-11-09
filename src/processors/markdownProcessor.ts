@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import { marked } from 'marked';
 import { TranslationService } from '../services/translationService';
 import { ConfigManager } from '../config/configManager';
+import { I18n } from '../utils/i18n';
 
 export interface MarkdownSection {
     type: 'heading' | 'paragraph' | 'code' | 'list' | 'blockquote' | 'table' | 'other';
@@ -29,65 +30,186 @@ export class MarkdownProcessor {
         const totalSections = translatableSections.length;
 
         if (totalSections === 0) {
-            vscode.window.showWarningMessage('没有找到需要翻译的内容');
+            vscode.window.showWarningMessage(I18n.t('message.noContentToTranslate'));
             return;
         }
 
-        const batchSize = this.configManager.getBatchSize();
-        const translatedSections: MarkdownSection[] = [];
+        // 合并所有需要翻译的内容
+        const translatableContent = translatableSections.map(section => section.content).join('\n\n');
 
-        for (let i = 0; i < totalSections; i += batchSize) {
-            if (token.isCancellationRequested) {
-                return;
-            }
+        // 计算token数量（粗略估算）
+        const estimatedTokens = this.estimateTokenCount(translatableContent);
+        const maxTokens = 3000; // 预留1000 tokens给prompt，总限制通常是4000
+        const promptTokens = 500; // prompt大概占用500 tokens
 
-            const batch = translatableSections.slice(i, i + batchSize);
-            const batchTexts = batch.map(section => section.content);
+        console.log(I18n.t('log.estimatedTokens', estimatedTokens.toString(), maxTokens.toString(), promptTokens.toString()));
 
+        let translatedContent: string;
+
+        // 如果token数不超过限制，整个文件一次性翻译
+        if (estimatedTokens + promptTokens <= maxTokens) {
             progress.report({
-                message: `正在翻译第 ${i + 1}-${Math.min(i + batchSize, totalSections)} 段内容...`,
-                increment: (batchSize / totalSections) * 100
+                message: I18n.t('message.translatingEntireFile'),
+                increment: 50
             });
 
             try {
-                const translatedTexts = await this.translationService.translateBatch(batchTexts);
+                // 将整个可翻译内容作为单一文本翻译
+                const fullTranslatedText = await this.translationService.translateText(translatableContent);
 
-                for (let j = 0; j < batch.length; j++) {
-                    translatedSections.push({
-                        ...batch[j],
-                        content: translatedTexts[j]
-                    });
-                }
-            } catch (error) {
-                console.error('批量翻译错误:', error);
-                // 如果批量翻译失败，尝试单独翻译
-                for (const section of batch) {
-                    try {
-                        const translated = await this.translationService.translateText(section.content);
+                // 将翻译后的文本按照原内容的段落结构分割
+                // 使用原文本的段落分隔符来分割翻译结果
+                const originalParagraphs = translatableSections.map(s => s.content);
+                const translatedParagraphs = this.splitTranslatedText(fullTranslatedText, originalParagraphs);
+
+                // 重建翻译后的sections，保持原有结构
+                const translatedSections: MarkdownSection[] = [];
+                let translatedIndex = 0;
+
+                for (const section of sections) {
+                    if (section.shouldTranslate && translatedIndex < translatedParagraphs.length) {
                         translatedSections.push({
                             ...section,
-                            content: translated
+                            content: translatedParagraphs[translatedIndex]
                         });
-                    } catch (singleError) {
-                        console.error('单独翻译错误:', singleError);
-                        translatedSections.push(section); // 保留原文
+                        translatedIndex++;
+                    } else {
+                        translatedSections.push(section);
+                    }
+                }
+
+                translatedContent = this.rebuildMarkdown(sections, translatedSections);
+            } catch (error) {
+                console.error('整文件翻译错误:', error);
+                throw error;
+            }
+        } else {
+            // 如果超过限制，使用分批翻译方式（仅在文件超大时使用）
+            console.log(I18n.t('message.fileTooLarge'));
+            const batchSize = 10; // 固定批次大小，文件过大时分批处理
+            const translatedSections: MarkdownSection[] = [];
+
+            for (let i = 0; i < totalSections; i += batchSize) {
+                if (token.isCancellationRequested) {
+                    return;
+                }
+
+                const batch = translatableSections.slice(i, i + batchSize);
+                const batchTexts = batch.map(section => section.content);
+
+                progress.report({
+                    message: I18n.t('message.translatingSection', (i + 1).toString(), Math.min(i + batchSize, totalSections).toString()),
+                    increment: (batchSize / totalSections) * 50
+                });
+
+                try {
+                    const translatedTexts = await this.translationService.translateBatch(batchTexts);
+
+                    for (let j = 0; j < batch.length; j++) {
+                        translatedSections.push({
+                            ...batch[j],
+                            content: translatedTexts[j]
+                        });
+                    }
+                } catch (error) {
+                    console.error('批量翻译错误:', error);
+                    // 如果批量翻译失败，尝试单独翻译
+                    for (const section of batch) {
+                        try {
+                            const translated = await this.translationService.translateText(section.content);
+                            translatedSections.push({
+                                ...section,
+                                content: translated
+                            });
+                        } catch (singleError) {
+                            console.error('单独翻译错误:', singleError);
+                            translatedSections.push(section); // 保留原文
+                        }
                     }
                 }
             }
+
+            translatedContent = this.rebuildMarkdown(sections, translatedSections);
         }
 
-        // 重建文档内容
-        console.log('开始重建文档...');
-        console.log('原文段落数量:', sections.length);
-        console.log('翻译段落数量:', translatedSections.length);
+        progress.report({
+            message: I18n.t('message.savingFile'),
+            increment: 50
+        });
 
-        const translatedContent = this.rebuildMarkdown(sections, translatedSections);
-
-        console.log('重建后的内容长度:', translatedContent.length);
-        console.log('重建后内容预览:', translatedContent.substring(0, 200));
+        console.log(I18n.t('log.translationComplete'));
+        console.log(I18n.t('log.originalLength', content.length.toString()));
+        console.log(I18n.t('log.translatedLength', translatedContent.length.toString()));
 
         // 保存翻译后的文件
         await this.saveTranslatedFile(document, translatedContent);
+    }
+
+    /**
+     * 估算文本的token数量
+     * 粗略估算：中文字符 * 1.5 + 其他字符 / 4
+     */
+    private estimateTokenCount(text: string): number {
+        // 统计中文字符数
+        const chineseChars = (text.match(/[\u4e00-\u9fff]/g) || []).length;
+        // 统计其他字符数（去除空白字符）
+        const otherChars = text.replace(/[\u4e00-\u9fff\s]/g, '').length;
+
+        // 估算：中文字符每个约1.5 tokens，其他字符约0.25 tokens
+        return Math.ceil(chineseChars * 1.5 + otherChars * 0.25);
+    }
+
+    /**
+     * 将翻译后的完整文本按照原始段落结构分割
+     * 尝试保持段落数量一致
+     */
+    private splitTranslatedText(translatedText: string, originalParagraphs: string[]): string[] {
+        // 如果段落数量相同，直接按双换行符分割
+        const paragraphs = translatedText.split(/\n\n+/);
+
+        if (paragraphs.length === originalParagraphs.length) {
+            return paragraphs;
+        }
+
+        // 如果数量不一致，尝试智能分割
+        // 如果翻译后的段落更少，尝试按句子分割
+        if (paragraphs.length < originalParagraphs.length) {
+            // 尝试按句号、问号、感叹号分割
+            const sentences = translatedText.split(/([.!?]\s+)/);
+            const result: string[] = [];
+            let currentParagraph = '';
+            let sentenceIndex = 0;
+
+            for (const original of originalParagraphs) {
+                const sentenceCount = (original.match(/[.!?]/g) || []).length || 1;
+                const paragraphSentences: string[] = [];
+
+                for (let i = 0; i < sentenceCount && sentenceIndex < sentences.length; i++) {
+                    paragraphSentences.push(sentences[sentenceIndex]);
+                    sentenceIndex++;
+                }
+
+                result.push(paragraphSentences.join('').trim() || original);
+            }
+
+            return result.length > 0 ? result : paragraphs;
+        }
+
+        // 如果翻译后的段落更多，合并多余的段落
+        if (paragraphs.length > originalParagraphs.length) {
+            const result: string[] = [];
+            const avgLength = Math.ceil(paragraphs.length / originalParagraphs.length);
+
+            for (let i = 0; i < originalParagraphs.length; i++) {
+                const start = i * avgLength;
+                const end = Math.min(start + avgLength, paragraphs.length);
+                result.push(paragraphs.slice(start, end).join('\n\n'));
+            }
+
+            return result;
+        }
+
+        return paragraphs;
     }
 
     private parseMarkdown(content: string): MarkdownSection[] {

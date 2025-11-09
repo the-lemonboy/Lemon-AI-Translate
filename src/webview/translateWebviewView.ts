@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import { ConfigManager } from '../config/configManager';
 import { TranslationService } from '../services/translationService';
 import { MarkdownProcessor } from '../processors/markdownProcessor';
+import { I18n } from '../utils/i18n';
 
 export class TranslateWebviewViewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'ai-translate-wiki.translateView';
@@ -56,12 +57,38 @@ export class TranslateWebviewViewProvider implements vscode.WebviewViewProvider 
     }
 
     private _getHtmlForWebview(webview: vscode.Webview) {
+        // 获取所有需要的本地化字符串
+        const i18n = {
+            title: I18n.t('webview.translateConsole.title'),
+            pathConfig: I18n.t('webview.pathConfig.title'),
+            sourcePathLabel: I18n.t('webview.sourcePath.label'),
+            sourcePathPlaceholder: I18n.t('webview.sourcePath.placeholder'),
+            sourcePathHelp: I18n.t('webview.sourcePath.help'),
+            outputPathLabel: I18n.t('webview.outputPath.label'),
+            outputPathPlaceholder: I18n.t('webview.outputPath.placeholder'),
+            outputPathHelp: I18n.t('webview.outputPath.help'),
+            promptEnhancement: I18n.t('webview.promptEnhancement.title'),
+            customPromptLabel: I18n.t('webview.customPrompt.label'),
+            customPromptPlaceholder: I18n.t('webview.customPrompt.placeholder'),
+            customPromptHelp: I18n.t('webview.customPrompt.help'),
+            startTranslation: I18n.t('webview.startTranslation.button'),
+            cancelTranslation: I18n.t('webview.cancelTranslation.button'),
+            browse: I18n.t('webview.browse.button'),
+            configSourcePath: I18n.t('webview.status.configSourcePath'),
+            configOutputPath: I18n.t('webview.status.configOutputPath'),
+            translationStarted: I18n.t('webview.status.translationStarted'),
+            translationCancelled: I18n.t('webview.status.translationCancelled'),
+            preparing: I18n.t('webview.status.preparing'),
+            translationCompleted: I18n.t('webview.progress.completed'),
+            translationError: I18n.t('webview.progress.error')
+        };
+
         return `<!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="${vscode.env.language}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>批量翻译控制台</title>
+    <title>${i18n.title}</title>
     <style>
         body {
             font-family: var(--vscode-font-family);
@@ -274,43 +301,43 @@ export class TranslateWebviewViewProvider implements vscode.WebviewViewProvider 
 </head>
 <body>
     <div class="container">
-        <h1>批量翻译控制台</h1>
+        <h1>${i18n.title}</h1>
         
         <div class="section">
-            <h2>路径配置</h2>
+            <h2>${i18n.pathConfig}</h2>
             
             <div class="form-group">
-                <label for="sourcePath">要翻译的路径</label>
+                <label for="sourcePath">${i18n.sourcePathLabel}</label>
                 <div class="path-input-group">
-                    <input type="text" id="sourcePath" placeholder="选择或输入要翻译的文件/目录路径">
-                    <button onclick="selectSourcePath()">浏览</button>
+                    <input type="text" id="sourcePath" placeholder="${i18n.sourcePathPlaceholder}">
+                    <button onclick="selectSourcePath()">${i18n.browse}</button>
                 </div>
-                <div class="help-text">可以输入文件路径或目录路径，支持相对路径和绝对路径</div>
+                <div class="help-text">${i18n.sourcePathHelp}</div>
             </div>
             
             <div class="form-group">
-                <label for="outputPath">生成文件的路径</label>
+                <label for="outputPath">${i18n.outputPathLabel}</label>
                 <div class="path-input-group">
-                    <input type="text" id="outputPath" placeholder="选择或输入翻译文件的输出路径">
-                    <button onclick="selectOutputPath()">浏览</button>
+                    <input type="text" id="outputPath" placeholder="${i18n.outputPathPlaceholder}">
+                    <button onclick="selectOutputPath()">${i18n.browse}</button>
                 </div>
-                <div class="help-text">翻译后的文件将保存在此路径，如果不存在会自动创建</div>
+                <div class="help-text">${i18n.outputPathHelp}</div>
             </div>
         </div>
         
         <div class="section">
-            <h2>Prompt 增强</h2>
+            <h2>${i18n.promptEnhancement}</h2>
             
             <div class="form-group">
-                <label for="customPrompt">自定义 Prompt</label>
-                <textarea id="customPrompt" placeholder="输入自定义的翻译prompt，这将替换默认的翻译指令。例如：&#10;你是一名专业的技术文档翻译专家。请将以下中文文本翻译成英文，要求：&#10;1. 保持Markdown格式完全不变&#10;2. 专业术语使用标准翻译&#10;3. 代码块和链接保持不变"></textarea>
-                <div class="help-text">留空则使用默认的翻译prompt。可以使用 {targetLanguage} 作为占位符，将被替换为实际的目标语言</div>
+                <label for="customPrompt">${i18n.customPromptLabel}</label>
+                <textarea id="customPrompt" placeholder="${i18n.customPromptPlaceholder.replace(/\n/g, '&#10;')}"></textarea>
+                <div class="help-text">${i18n.customPromptHelp}</div>
             </div>
         </div>
         
         <div class="button-group">
-            <button class="btn btn-primary" id="startBtn" onclick="startTranslation()">开始翻译</button>
-            <button class="btn btn-danger" id="cancelBtn" onclick="cancelTranslation()" disabled>取消翻译</button>
+            <button class="btn btn-primary" id="startBtn" onclick="startTranslation()">${i18n.startTranslation}</button>
+            <button class="btn btn-danger" id="cancelBtn" onclick="cancelTranslation()" disabled>${i18n.cancelTranslation}</button>
         </div>
         
         <div id="statusMessage" class="status"></div>
@@ -319,7 +346,7 @@ export class TranslateWebviewViewProvider implements vscode.WebviewViewProvider 
             <div class="progress-bar">
                 <div class="progress-fill" id="progressFill"></div>
             </div>
-            <div class="progress-text" id="progressText">准备中...</div>
+            <div class="progress-text" id="progressText">${i18n.preparing}</div>
         </div>
     </div>
 
@@ -351,19 +378,19 @@ export class TranslateWebviewViewProvider implements vscode.WebviewViewProvider 
             const customPrompt = document.getElementById('customPrompt').value.trim();
             
             if (!sourcePath) {
-                showStatus('请先配置要翻译的路径', 'error');
+                showStatus('${i18n.configSourcePath}', 'error');
                 return;
             }
             
             if (!outputPath) {
-                showStatus('请先配置生成文件的路径', 'error');
+                showStatus('${i18n.configOutputPath}', 'error');
                 return;
             }
             
             isTranslating = true;
             updateButtonState();
             showProgress(true);
-            showStatus('开始翻译...', 'info');
+            showStatus('${i18n.translationStarted}', 'info');
             
             vscode.postMessage({
                 command: 'startTranslation',
@@ -434,21 +461,21 @@ export class TranslateWebviewViewProvider implements vscode.WebviewViewProvider 
                     updateButtonState();
                     showProgress(false);
                     updateProgress(0, '');
-                    showStatus(message.message || '翻译完成！', 'success');
+                    showStatus(message.message || '${i18n.translationCompleted}', 'success');
                     break;
                 case 'translationError':
                     isTranslating = false;
                     updateButtonState();
                     showProgress(false);
                     updateProgress(0, '');
-                    showStatus(message.message || '翻译失败', 'error');
+                    showStatus(message.message || '${i18n.translationError}', 'error');
                     break;
                 case 'translationCancelled':
                     isTranslating = false;
                     updateButtonState();
                     showProgress(false);
                     updateProgress(0, '');
-                    showStatus('翻译已取消', 'warning');
+                    showStatus('${i18n.translationCancelled}', 'warning');
                     break;
             }
         });
@@ -489,7 +516,7 @@ export class TranslateWebviewViewProvider implements vscode.WebviewViewProvider 
             } else if (workspaceFolders && workspaceFolders.length > 0) {
                 resolvedSourcePath = path.join(workspaceFolders[0].uri.fsPath, sourcePath);
             } else {
-                throw new Error('无法解析源路径，请使用绝对路径');
+                throw new Error(I18n.t('error.cannotResolveSourcePath'));
             }
 
             if (path.isAbsolute(outputPath)) {
@@ -497,12 +524,12 @@ export class TranslateWebviewViewProvider implements vscode.WebviewViewProvider 
             } else if (workspaceFolders && workspaceFolders.length > 0) {
                 resolvedOutputPath = path.join(workspaceFolders[0].uri.fsPath, outputPath);
             } else {
-                throw new Error('无法解析输出路径，请使用绝对路径');
+                throw new Error(I18n.t('error.cannotResolveOutputPath'));
             }
 
             // 检查源路径是否存在
             if (!fs.existsSync(resolvedSourcePath)) {
-                throw new Error(`源路径不存在: ${resolvedSourcePath}`);
+                throw new Error(I18n.t('error.sourcePathNotExists', resolvedSourcePath));
             }
 
             // 收集要翻译的文件
@@ -522,7 +549,7 @@ export class TranslateWebviewViewProvider implements vscode.WebviewViewProvider 
             }
 
             if (files.length === 0) {
-                throw new Error('没有找到要翻译的Markdown文件');
+                throw new Error(I18n.t('error.noMarkdownFilesFound'));
             }
 
             // 确保输出目录存在
@@ -540,13 +567,13 @@ export class TranslateWebviewViewProvider implements vscode.WebviewViewProvider 
             this._view.webview.postMessage({
                 command: 'translationProgress',
                 percentage: 0,
-                message: `找到 ${files.length} 个文件，开始翻译...`
+                message: I18n.t('webview.progress.foundFiles', files.length.toString())
             });
 
             // 开始翻译
             await vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
-                title: "正在批量翻译...",
+                title: I18n.t('message.translatingFile'),
                 cancellable: true
             }, async (progress, token) => {
                 // 合并取消令牌
@@ -565,7 +592,7 @@ export class TranslateWebviewViewProvider implements vscode.WebviewViewProvider 
                     const document = await vscode.workspace.openTextDocument(file);
 
                     const progressPercentage = Math.round(((i + 1) / files.length) * 100);
-                    const progressMessage = `正在翻译 ${path.basename(file.fsPath)} (${i + 1}/${files.length})`;
+                    const progressMessage = I18n.t('webview.progress.translatingFile', path.basename(file.fsPath), (i + 1).toString(), files.length.toString());
 
                     progress.report({
                         message: progressMessage,
@@ -590,21 +617,21 @@ export class TranslateWebviewViewProvider implements vscode.WebviewViewProvider 
                         // 恢复原始输出目录
                         await this._configManager.updateOutputDirectory(originalOutputDir);
                     } catch (error) {
-                        console.error(`翻译文件 ${file.fsPath} 失败:`, error);
+                        console.error(I18n.t('webview.progress.error', file.fsPath), error);
                         // 继续翻译下一个文件
                     }
                 }
 
                 this._view?.webview.postMessage({
                     command: 'translationComplete',
-                    message: `翻译完成！共处理 ${files.length} 个文件`
+                    message: I18n.t('webview.progress.completed', files.length.toString())
                 });
             });
 
         } catch (error: any) {
             this._view?.webview.postMessage({
                 command: 'translationError',
-                message: `翻译失败: ${error.message || error}`
+                message: I18n.t('webview.progress.error', error.message || String(error))
             });
         } finally {
             if (this._currentTranslationToken) {
@@ -637,7 +664,7 @@ export class TranslateWebviewViewProvider implements vscode.WebviewViewProvider 
         }
         this._view?.webview.postMessage({
             command: 'translationCancelled',
-            message: '翻译已取消'
+            message: I18n.t('webview.status.translationCancelled')
         });
     }
 
@@ -647,7 +674,7 @@ export class TranslateWebviewViewProvider implements vscode.WebviewViewProvider 
             canSelectMany: false,
             canSelectFiles: true,
             canSelectFolders: true,
-            openLabel: '选择'
+            openLabel: I18n.t('webview.browse.button')
         };
 
         if (workspaceFolders && workspaceFolders.length > 0) {
@@ -682,7 +709,7 @@ export class TranslateWebviewViewProvider implements vscode.WebviewViewProvider 
             canSelectMany: false,
             canSelectFiles: false,
             canSelectFolders: true,
-            openLabel: '选择'
+            openLabel: I18n.t('webview.browse.button')
         };
 
         if (workspaceFolders && workspaceFolders.length > 0) {

@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { ConfigManager } from '../config/configManager';
+import { I18n } from '../utils/i18n';
 
 export class SettingsPanel {
     private static readonly viewType = 'ai-translate-wiki.settings';
@@ -74,12 +75,43 @@ export class SettingsPanel {
             vscode.Uri.joinPath(this._extensionUri, 'media', 'style.css')
         );
 
+        // 获取所有需要的本地化字符串
+        const i18n = {
+            title: I18n.t('settings.title'),
+            apiConfig: I18n.t('settings.apiConfig.title'),
+            apiProvider: I18n.t('settings.apiProvider.label'),
+            apiProviderHelp: I18n.t('settings.apiProvider.help'),
+            apiKey: I18n.t('settings.apiKey.label'),
+            apiKeyPlaceholder: I18n.t('settings.apiKey.placeholder'),
+            apiKeyHelp: I18n.t('settings.apiKey.help'),
+            apiEndpoint: I18n.t('settings.apiEndpoint.label'),
+            apiEndpointPlaceholder: I18n.t('settings.apiEndpoint.placeholder'),
+            apiEndpointHelp: I18n.t('settings.apiEndpoint.help'),
+            testConnection: I18n.t('settings.testConnection.button'),
+            fileConfig: I18n.t('settings.fileConfig.title'),
+            inputDirectory: I18n.t('settings.inputDirectory.label'),
+            inputDirectoryHelp: I18n.t('settings.inputDirectory.help'),
+            filePattern: I18n.t('settings.filePattern.label'),
+            filePatternHelp: I18n.t('settings.filePattern.help'),
+            recursiveSearch: I18n.t('settings.recursiveSearch.label'),
+            translationSettings: I18n.t('settings.translationSettings.title'),
+            targetLanguage: I18n.t('settings.targetLanguage.label'),
+            outputDirectory: I18n.t('settings.outputDirectory.label'),
+            outputDirectoryHelp: I18n.t('settings.outputDirectory.help'),
+            preserveFormatting: I18n.t('settings.preserveFormatting.label'),
+            translateCodeBlocks: I18n.t('settings.translateCodeBlocks.label'),
+            saveSettings: I18n.t('settings.saveSettings.button'),
+            resetSettings: I18n.t('settings.resetSettings.button'),
+            showStatus: I18n.t('settings.status.reset'),
+            enterApiKey: I18n.t('settings.status.enterApiKey')
+        };
+
         return `<!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="${vscode.env.language}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI翻译设置</title>
+    <title>${i18n.title}</title>
     <style>
         body {
             font-family: var(--vscode-font-family);
@@ -231,13 +263,13 @@ export class SettingsPanel {
 </head>
 <body>
     <div class="container">
-        <h1>AI翻译设置</h1>
+        <h1>${i18n.title}</h1>
         
         <div class="section">
-            <h2>API配置</h2>
+            <h2>${i18n.apiConfig}</h2>
             
             <div class="form-group">
-                <label for="apiProvider">翻译服务提供商</label>
+                <label for="apiProvider">${i18n.apiProvider}</label>
                 <select id="apiProvider">
                     <option value="openai">OpenAI GPT</option>
                     <option value="azure">Azure OpenAI</option>
@@ -245,85 +277,79 @@ export class SettingsPanel {
                     <option value="claude">Anthropic Claude</option>
                     <option value="deepseek">DeepSeek</option>
                 </select>
-                <div class="help-text">选择您要使用的AI翻译服务</div>
+                <div class="help-text">${i18n.apiProviderHelp}</div>
             </div>
             
             <div class="form-group">
-                <label for="apiKey">API密钥</label>
-                <input type="password" id="apiKey" placeholder="请输入您的API密钥">
-                <div class="help-text">您的API密钥将安全存储在VSCode设置中</div>
+                <label for="apiKey">${i18n.apiKey}</label>
+                <input type="password" id="apiKey" placeholder="${i18n.apiKeyPlaceholder}">
+                <div class="help-text">${i18n.apiKeyHelp}</div>
             </div>
             
             <div class="form-group" id="apiEndpointGroup" style="display: none;">
-                <label for="apiEndpoint">API端点</label>
-                <input type="text" id="apiEndpoint" placeholder="https://your-resource.openai.azure.com/openai/deployments/your-deployment/chat/completions">
-                <div class="help-text">Azure OpenAI需要配置完整的API端点URL</div>
+                <label for="apiEndpoint">${i18n.apiEndpoint}</label>
+                <input type="text" id="apiEndpoint" placeholder="${i18n.apiEndpointPlaceholder}">
+                <div class="help-text">${i18n.apiEndpointHelp}</div>
             </div>
             
             <div class="button-group">
-                <button class="btn btn-secondary" onclick="testConnection()">测试连接</button>
+                <button class="btn btn-secondary" onclick="testConnection()">${i18n.testConnection}</button>
             </div>
             
             <div id="connectionStatus" class="status"></div>
         </div>
         
         <div class="section">
-            <h2>文件配置</h2>
+            <h2>${i18n.fileConfig}</h2>
             
             <div class="form-group">
-                <label for="inputDirectory">输入文件目录</label>
+                <label for="inputDirectory">${i18n.inputDirectory}</label>
                 <input type="text" id="inputDirectory" placeholder="./">
-                <div class="help-text">要翻译的文件所在目录，支持相对路径和绝对路径</div>
+                <div class="help-text">${i18n.inputDirectoryHelp}</div>
             </div>
             
             <div class="form-group">
-                <label for="filePattern">文件匹配模式</label>
+                <label for="filePattern">${i18n.filePattern}</label>
                 <input type="text" id="filePattern" placeholder="**/*.md">
-                <div class="help-text">使用glob语法匹配文件，如：*.md, **/*.md, docs/**/*.txt</div>
+                <div class="help-text">${i18n.filePatternHelp}</div>
             </div>
             
             <div class="checkbox-group">
                 <input type="checkbox" id="recursiveSearch" checked>
-                <label for="recursiveSearch">递归搜索子目录</label>
+                <label for="recursiveSearch">${i18n.recursiveSearch}</label>
             </div>
         </div>
         
         <div class="section">
-            <h2>翻译设置</h2>
+            <h2>${i18n.translationSettings}</h2>
             
             <div class="form-group">
-                <label>目标语言</label>
+                <label>${i18n.targetLanguage}</label>
                 <div class="language-grid" id="languageGrid">
                     <!-- 语言选项将通过JavaScript动态生成 -->
                 </div>
             </div>
             
             <div class="form-group">
-                <label for="outputDirectory">输出目录</label>
+                <label for="outputDirectory">${i18n.outputDirectory}</label>
                 <input type="text" id="outputDirectory" placeholder="./translated">
-                <div class="help-text">翻译文件的保存目录，可以是相对路径或绝对路径</div>
+                <div class="help-text">${i18n.outputDirectoryHelp}</div>
             </div>
             
             <div class="checkbox-group">
                 <input type="checkbox" id="preserveFormatting" checked>
-                <label for="preserveFormatting">保持Markdown格式</label>
+                <label for="preserveFormatting">${i18n.preserveFormatting}</label>
             </div>
             
             <div class="checkbox-group">
                 <input type="checkbox" id="translateCodeBlocks">
-                <label for="translateCodeBlocks">翻译代码块中的注释</label>
-            </div>
-            
-            <div class="form-group">
-                <label for="batchSize">批量翻译大小</label>
-                <input type="number" id="batchSize" min="1" max="20" value="5">
-                <div class="help-text">每次批量翻译的段落数量，建议5-10段</div>
+                <label for="translateCodeBlocks">${i18n.translateCodeBlocks}</label>
             </div>
         </div>
         
         <div class="button-group">
-            <button class="btn btn-primary" onclick="saveSettings()">保存设置</button>
-            <button class="btn btn-secondary" onclick="resetSettings()">重置设置</button>
+            <button class="btn btn-primary" onclick="saveSettings()">${i18n.saveSettings}</button>
+            <button class="btn btn-secondary" onclick="resetSettings()">${i18n.resetSettings}</button>
         </div>
         
         <div id="saveStatus" class="status"></div>
@@ -414,7 +440,6 @@ export class SettingsPanel {
                 outputDirectory: document.getElementById('outputDirectory').value,
                 preserveFormatting: document.getElementById('preserveFormatting').checked,
                 translateCodeBlocks: document.getElementById('translateCodeBlocks').checked,
-                batchSize: parseInt(document.getElementById('batchSize').value),
                 inputDirectory: document.getElementById('inputDirectory').value,
                 filePattern: document.getElementById('filePattern').value,
                 recursiveSearch: document.getElementById('recursiveSearch').checked
@@ -431,7 +456,6 @@ export class SettingsPanel {
             document.getElementById('outputDirectory').value = './translated';
             document.getElementById('preserveFormatting').checked = true;
             document.getElementById('translateCodeBlocks').checked = false;
-            document.getElementById('batchSize').value = '5';
             document.getElementById('inputDirectory').value = './';
             document.getElementById('filePattern').value = '**/*.md';
             document.getElementById('recursiveSearch').checked = true;
@@ -439,7 +463,7 @@ export class SettingsPanel {
             // 重置语言选择
             selectLanguage('en');
             
-            showStatus('saveStatus', '设置已重置', 'success');
+            showStatus('saveStatus', '${i18n.showStatus}', 'success');
         }
         
         function testConnection() {
@@ -448,7 +472,7 @@ export class SettingsPanel {
             const apiEndpoint = document.getElementById('apiEndpoint').value;
             
             if (!apiKey) {
-                showStatus('connectionStatus', '请先输入API密钥', 'error');
+                showStatus('connectionStatus', '${i18n.enterApiKey}', 'error');
                 return;
             }
             
@@ -495,7 +519,6 @@ export class SettingsPanel {
             document.getElementById('outputDirectory').value = settings.outputDirectory || './translated';
             document.getElementById('preserveFormatting').checked = settings.preserveFormatting !== false;
             document.getElementById('translateCodeBlocks').checked = settings.translateCodeBlocks || false;
-            document.getElementById('batchSize').value = settings.batchSize || 5;
             document.getElementById('inputDirectory').value = settings.inputDirectory || './';
             document.getElementById('filePattern').value = settings.filePattern || '**/*.md';
             document.getElementById('recursiveSearch').checked = settings.recursiveSearch !== false;
@@ -524,7 +547,6 @@ export class SettingsPanel {
             await this._configManager.updateOutputDirectory(settings.outputDirectory);
             await this._configManager.updatePreserveFormatting(settings.preserveFormatting);
             await this._configManager.updateTranslateCodeBlocks(settings.translateCodeBlocks);
-            await this._configManager.updateBatchSize(settings.batchSize);
             await this._configManager.updateInputDirectory(settings.inputDirectory);
             await this._configManager.updateFilePattern(settings.filePattern);
             await this._configManager.updateRecursiveSearch(settings.recursiveSearch);
@@ -532,13 +554,13 @@ export class SettingsPanel {
             this._panel.webview.postMessage({
                 command: 'saveResult',
                 success: true,
-                message: '设置保存成功！'
+                message: I18n.t('settings.status.saved')
             });
         } catch (error) {
             this._panel.webview.postMessage({
                 command: 'saveResult',
                 success: false,
-                message: `保存失败: ${error}`
+                message: I18n.t('settings.status.saveFailed', String(error))
             });
         }
     }
@@ -552,13 +574,13 @@ export class SettingsPanel {
             this._panel.webview.postMessage({
                 command: 'connectionResult',
                 success: true,
-                message: '连接测试成功！'
+                message: I18n.t('settings.status.connectionSuccess')
             });
         } catch (error) {
             this._panel.webview.postMessage({
                 command: 'connectionResult',
                 success: false,
-                message: `连接测试失败: ${error}`
+                message: I18n.t('settings.status.connectionFailed', String(error))
             });
         }
     }
@@ -572,7 +594,6 @@ export class SettingsPanel {
             outputDirectory: this._configManager.getOutputDirectory(),
             preserveFormatting: this._configManager.getPreserveFormatting(),
             translateCodeBlocks: this._configManager.getTranslateCodeBlocks(),
-            batchSize: this._configManager.getBatchSize(),
             inputDirectory: this._configManager.getInputDirectory(),
             filePattern: this._configManager.getFilePattern(),
             recursiveSearch: this._configManager.getRecursiveSearch()

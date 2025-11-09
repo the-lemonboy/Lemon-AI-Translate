@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { I18n } from '../utils/i18n';
 
 export class ConfigManager {
     private static readonly CONFIG_SECTION = 'ai-translate-wiki';
@@ -130,18 +131,18 @@ export class ConfigManager {
         const errors: string[] = [];
 
         if (!this.getApiKey()) {
-            errors.push('API密钥未配置');
+            errors.push(I18n.t('error.apiKeyNotSet'));
         }
 
         const apiProvider = this.getApiProvider();
         if (apiProvider === 'azure' && !this.getApiEndpoint()) {
-            errors.push('Azure OpenAI需要配置API端点');
+            errors.push(I18n.t('error.azureEndpointNotSet'));
         }
 
         const targetLanguage = this.getTargetLanguage();
         const supportedLanguages = this.getSupportedLanguages();
         if (!supportedLanguages[targetLanguage]) {
-            errors.push(`不支持的目标语言: ${targetLanguage}`);
+            errors.push(I18n.t('error.unsupportedTargetLanguage', targetLanguage));
         }
 
         return {

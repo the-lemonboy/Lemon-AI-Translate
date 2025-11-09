@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { I18n } from '../utils/i18n';
 
 export class TranslateTreeViewProvider implements vscode.TreeDataProvider<TranslateTreeItem> {
     private _onDidChangeTreeData: vscode.EventEmitter<TranslateTreeItem | undefined | null | void> = new vscode.EventEmitter<TranslateTreeItem | undefined | null | void>();
@@ -19,12 +20,12 @@ export class TranslateTreeViewProvider implements vscode.TreeDataProvider<Transl
             // 根节点
             return Promise.resolve([
                 new TranslateTreeItem(
-                    '批量翻译',
+                    I18n.t('treeView.batchTranslate.label'),
                     vscode.TreeItemCollapsibleState.None,
                     'globe',
                     {
                         command: 'ai-translate-wiki.openTranslatePanel',
-                        title: '打开翻译面板'
+                        title: I18n.t('treeView.openPanel.title')
                     }
                 )
             ]);
