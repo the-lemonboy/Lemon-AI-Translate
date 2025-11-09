@@ -67,6 +67,7 @@
   "webview.progress.translatingFile": "Translating {0} ({1}/{2})",
   "webview.progress.completed": "Translation completed! Processed {0} files",
   "webview.progress.error": "Translation failed: {0}",
+  "webview.progress.default": "Progress: {0}%",
   "settings.title": "AI Translation Settings",
   "settings.apiConfig.title": "API Configuration",
   "settings.apiProvider.label": "Translation Service Provider",
@@ -127,6 +128,7 @@
   "log.translationComplete": "Translation complete, starting to save file...",
   "log.originalLength": "Original length: {0}",
   "log.translatedLength": "Translated length: {0}",
+  "log.translationFileFailed": "Translation failed for file {0}:",
   "message.openFile": "Please open a file first",
   "message.testText": "This is a test text to verify that the translation function works correctly."
 }

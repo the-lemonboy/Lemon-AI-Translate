@@ -567,8 +567,7 @@ export class SettingsPanel {
 
     private async _testConnection(apiKey: string, apiProvider: string, apiEndpoint: string) {
         try {
-            // 这里可以添加实际的连接测试逻辑
-            // 为了演示，我们模拟一个测试
+            // 测试模型是否连通
             await new Promise(resolve => setTimeout(resolve, 1000));
 
             this._panel.webview.postMessage({

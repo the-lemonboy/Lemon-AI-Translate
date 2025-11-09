@@ -67,6 +67,7 @@
   "webview.progress.translatingFile": "正在翻译 {0} ({1}/{2})",
   "webview.progress.completed": "翻译完成！共处理 {0} 个文件",
   "webview.progress.error": "翻译失败: {0}",
+  "webview.progress.default": "进度: {0}%",
   "settings.title": "AI翻译设置",
   "settings.apiConfig.title": "API配置",
   "settings.apiProvider.label": "翻译服务提供商",
@@ -127,6 +128,7 @@
   "log.translationComplete": "翻译完成，开始保存文件...",
   "log.originalLength": "原文长度: {0}",
   "log.translatedLength": "翻译后长度: {0}",
+  "log.translationFileFailed": "翻译文件 {0} 失败:",
   "message.openFile": "请先打开一个文件",
   "message.testText": "这是一个测试文本，用于验证翻译功能是否正常工作。"
 }
